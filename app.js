@@ -42,7 +42,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-app.io.on('connection', function(socket) {  
+app.io.on('connection', function(socket) { 
+  console.log("Usuario conectado");
+  console.log(socket); 
   setInterval(function() {
       socket.emit('servermessage', Math.floor((Math.random() * 100000)));
   }, 1000); 
