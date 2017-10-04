@@ -44,7 +44,6 @@ app.use(function(err, req, res, next) {
 });
 app.io.on('connection', function(socket) { 
   console.log("Usuario conectado");
-  console.log(socket); 
   setInterval(function() {
       socket.emit('servermessage', Math.floor((Math.random() * 100000)));
   }, 1000); 
