@@ -52,11 +52,14 @@ app.io.on('connection', function(socket) {
   }, 1000);
   
    socket.on('add user', function (data) {
-    console.log("Usuario Regisgtrado");
-    if(socket.username != data.userId){
+    //console.log("Usuario Regisgtrado");
+    //console.log(userNames[socket.username]);
+    //console.log(data.userId);
+    if(userNames[socket.username] == undefined){
       addedUser = true;
       socket.username = data.userId;
       userNames[data.userId] = data.userId;
+      //console.log(userNames);
       clients[data.userId] = data.userId;
       socket.room = data.userId; 
       socket.join(data.userId);
@@ -98,6 +101,7 @@ app.io.on('connection', function(socket) {
   socket.on('loggOff', function (data) {
     // remove the username from global usernames list
     if (addedUser) {
+      //console.log("usuario desconectado");
       delete userNames[socket.username];
     }
   });
