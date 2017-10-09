@@ -24,7 +24,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
-
+var userNames = [];
+var userRooms = [];
+var clients = [];
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
@@ -43,10 +45,61 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 app.io.on('connection', function(socket) { 
+  var addedUser = false;
   console.log("Usuario conectado");
   setInterval(function() {
       socket.emit('servermessage', Math.floor((Math.random() * 100000)));
-  }, 1000); 
+  }, 1000);
+  
+   socket.on('add user', function (data) {
+    if(socket.username != data.userId){
+      addedUser = true;
+      socket.username = data.userId;
+      userNames[data.userId] = data.userId;
+      clients[data.userId] = data.userId;
+      socket.room = data.userId; 
+      socket.join(data.userId);
+      userRooms[data.userId]= data.userId;
+    }
+    socket.emit('added', "usuario agregado al socket");
+  });
+  
+  socket.on('message', function (data) {
+    var msgInfo = {
+      "msg":data.msg,
+      "crt":false,
+      "receptorId":data.userId,
+      "actualId":data.reciverId
+    };
+    if(socket.room == userRooms[data.reciverId]){
+      socket.broadcast.to(socket.room).emit('message', data.msg);
+      socket.broadcast.to(socket.room).emit('addMessage', msgInfo);
+    }else{
+      socket.leave(socket.room);
+      socket.room = userRooms[data.reciverId]; 
+      socket.join(userRooms[data.reciverId]);
+      userRooms[data.userId]= userRooms[data.reciverId];
+      socket.broadcast.to(socket.room).emit('message', data.msg);
+      socket.broadcast.to(socket.room).emit('addMessage', msgInfo);
+    }
+   
+  });
+  socket.on('isLoggedIn', function (data) {
+    if(userNames[data.reciverId] != undefined){
+      socket.emit('isLoggedIn', true);
+    }else{
+      socket.emit('isLoggedIn', false);
+    }
+  });  
+  
+  
+  // when the user disconnects.. perform this
+  socket.on('disconnect', function () {
+    // remove the username from global usernames list
+    if (addedUser) {
+      delete userNames[socket.username];
+    }
+  });
 });
 
 module.exports = app;
