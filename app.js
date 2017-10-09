@@ -52,6 +52,7 @@ app.io.on('connection', function(socket) {
   }, 1000);
   
    socket.on('add user', function (data) {
+    console.log("Usuario Regisgtrado");
     if(socket.username != data.userId){
       addedUser = true;
       socket.username = data.userId;
@@ -91,7 +92,15 @@ app.io.on('connection', function(socket) {
       socket.emit('isLoggedIn', false);
     }
   });  
-  
+
+
+  // when the user disconnects.. perform this
+  socket.on('loggOff', function (data) {
+    // remove the username from global usernames list
+    if (addedUser) {
+      delete userNames[socket.username];
+    }
+  });
   
   // when the user disconnects.. perform this
   socket.on('disconnect', function () {
